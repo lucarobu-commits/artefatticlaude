@@ -5,20 +5,20 @@ create extension if not exists "pgcrypto";
 
 create table if not exists parametri (
   device_id uuid primary key,
-  setup numeric not null default 1500,
-  rinnovo numeric not null default 200,
+  prezzo_l1 numeric not null default 600,
+  prezzo_l2 numeric not null default 2000,
+  prezzo_evoluzione numeric not null default 800,
   tariffa numeric not null default 60,
-  oresvil numeric not null default 4,
-  n1 numeric not null default 4,
-  n2 numeric not null default 8,
-  n3 numeric not null default 14,
-  svilpercl numeric not null default 0.5,
+  n1_l1 numeric not null default 3,
+  n2_l1 numeric not null default 5,
+  n3_l1 numeric not null default 8,
+  n1_l2 numeric not null default 1,
+  n2_l2 numeric not null default 3,
+  n3_l2 numeric not null default 5,
+  adoz_evoluzione numeric not null default 20,
   vivere numeric not null default 1900,
   riserva numeric not null default 5,
   stipendio numeric not null default 0,
-  churn numeric not null default 5,
-  adoz numeric not null default 60,
-  vocipercl numeric not null default 1.5,
   ateco numeric not null default 67,
   aliq_imp numeric not null default 5,
   aliq_inps numeric not null default 26.1,
@@ -40,19 +40,10 @@ create table if not exists moduli (
   id uuid primary key default gen_random_uuid(),
   device_id uuid not null,
   nome text not null default '',
-  ore numeric not null default 0
+  ore numeric not null default 0,
+  livello text not null default 'L1' check (livello in ('L1', 'L2'))
 );
 create index if not exists moduli_device_id_idx on moduli (device_id);
-
-create table if not exists pacchetti (
-  id uuid primary key default gen_random_uuid(),
-  device_id uuid not null,
-  nome text not null default '',
-  prezzo numeric not null default 0,
-  ore_mese numeric not null default 0,
-  costo_var numeric not null default 0
-);
-create index if not exists pacchetti_device_id_idx on pacchetti (device_id);
 
 create table if not exists stack (
   id uuid primary key default gen_random_uuid(),
@@ -73,11 +64,9 @@ create index if not exists stack_device_id_idx on stack (device_id);
 alter table parametri enable row level security;
 alter table costi enable row level security;
 alter table moduli enable row level security;
-alter table pacchetti enable row level security;
 alter table stack enable row level security;
 
 create policy "accesso anon completo" on parametri for all using (true) with check (true);
 create policy "accesso anon completo" on costi for all using (true) with check (true);
 create policy "accesso anon completo" on moduli for all using (true) with check (true);
-create policy "accesso anon completo" on pacchetti for all using (true) with check (true);
 create policy "accesso anon completo" on stack for all using (true) with check (true);

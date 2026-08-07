@@ -3,7 +3,6 @@ import { useCalcolatore } from "./hooks/useCalcolatore";
 import { TabParametri } from "./components/tabs/TabParametri";
 import { TabAnnoPerAnno } from "./components/tabs/TabAnnoPerAnno";
 import { TabSingolo } from "./components/tabs/TabSingolo";
-import { TabPacchetti } from "./components/tabs/TabPacchetti";
 import { TabStack } from "./components/tabs/TabStack";
 import { TabFiscalita } from "./components/tabs/TabFiscalita";
 import { TabCosti } from "./components/tabs/TabCosti";
@@ -11,8 +10,7 @@ import { TabCosti } from "./components/tabs/TabCosti";
 const TABS = [
   { id: "parametri", etichetta: "Parametri" },
   { id: "anni", etichetta: "Anno per anno" },
-  { id: "singolo", etichetta: "Singolo cliente" },
-  { id: "pacchetti", etichetta: "Pacchetti" },
+  { id: "singolo", etichetta: "L1 vs L2" },
   { id: "stack", etichetta: "Tech stack" },
   { id: "fiscalita", etichetta: "Fiscalità" },
   { id: "costi", etichetta: "Costi fissi" },
@@ -72,7 +70,6 @@ function App() {
         {tabAttivo === "parametri" && <TabParametri calc={calc} />}
         {tabAttivo === "anni" && <TabAnnoPerAnno calc={calc} />}
         {tabAttivo === "singolo" && <TabSingolo calc={calc} />}
-        {tabAttivo === "pacchetti" && <TabPacchetti calc={calc} />}
         {tabAttivo === "stack" && <TabStack calc={calc} />}
         {tabAttivo === "fiscalita" && <TabFiscalita calc={calc} />}
         {tabAttivo === "costi" && <TabCosti calc={calc} onVaiStack={() => setTabAttivo("stack")} />}

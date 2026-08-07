@@ -7,25 +7,12 @@ import {
   supabaseConfigurato,
   upsertParametri,
 } from "./useSupabase";
-import {
-  DEFAULT_COSTI,
-  DEFAULT_MODULI,
-  DEFAULT_PACCHETTI,
-  DEFAULT_PARAMETRI,
-  DEFAULT_STACK,
-} from "../lib/defaults";
+import { DEFAULT_COSTI, DEFAULT_MODULI, DEFAULT_PARAMETRI, DEFAULT_STACK } from "../lib/defaults";
 import { leggiCache, salvaCache, type CacheDati } from "../lib/localCache";
-import {
-  calcAnni,
-  calcKpiParametri,
-  costiAnnuiTotali,
-  mediePacchetti,
-  stackAnnuoTotale,
-  stackMensileTotale,
-} from "../lib/calcoli";
-import type { Costo, Modulo, Pacchetto, Parametri, StrumentoStack } from "../lib/types";
+import { calcAnni, calcKpiParametri, costiAnnuiTotali, stackAnnuoTotale, stackMensileTotale } from "../lib/calcoli";
+import type { Costo, Modulo, Parametri, StrumentoStack } from "../lib/types";
 
-type Tabella = "costi" | "moduli" | "pacchetti" | "stack";
+type Tabella = "costi" | "moduli" | "stack";
 type StatoSync = "sincronizzato" | "sincronizzazione" | "offline" | "errore";
 
 function conDeviceId<T extends { id: string }>(righe: Omit<T, "device_id">[], deviceId: string): T[] {
@@ -38,7 +25,6 @@ export function useCalcolatore() {
   const [parametri, setParametri] = useState<Parametri>({ ...DEFAULT_PARAMETRI, device_id: deviceId });
   const [costi, setCosti] = useState<Costo[]>(conDeviceId(DEFAULT_COSTI, deviceId));
   const [moduli, setModuli] = useState<Modulo[]>(conDeviceId(DEFAULT_MODULI, deviceId));
-  const [pacchetti, setPacchetti] = useState<Pacchetto[]>(conDeviceId(DEFAULT_PACCHETTI, deviceId));
   const [stack, setStack] = useState<StrumentoStack[]>(conDeviceId(DEFAULT_STACK, deviceId));
 
   const [caricato, setCaricato] = useState(false);
@@ -60,7 +46,6 @@ export function useCalcolatore() {
       setParametri({ ...c.parametri, device_id: deviceId });
       setCosti(c.costi.map((r) => ({ ...r, device_id: deviceId })));
       setModuli(c.moduli.map((r) => ({ ...r, device_id: deviceId })));
-      setPacchetti(c.pacchetti.map((r) => ({ ...r, device_id: deviceId })));
       setStack(c.stack.map((r) => ({ ...r, device_id: deviceId })));
     }
 
@@ -82,13 +67,11 @@ export function useCalcolatore() {
         const parametriIniziali = dati.parametri ?? cache?.parametri ?? { ...DEFAULT_PARAMETRI, device_id: deviceId };
         const costiIniziali = primoAccesso ? (cache?.costi ?? conDeviceId(DEFAULT_COSTI, deviceId)) : dati.costi;
         const moduliIniziali = primoAccesso ? (cache?.moduli ?? conDeviceId(DEFAULT_MODULI, deviceId)) : dati.moduli;
-        const pacchettiIniziali = primoAccesso ? (cache?.pacchetti ?? conDeviceId(DEFAULT_PACCHETTI, deviceId)) : dati.pacchetti;
         const stackIniziale = primoAccesso ? (cache?.stack ?? conDeviceId(DEFAULT_STACK, deviceId)) : dati.stack;
 
         setParametri(parametriIniziali);
         setCosti(costiIniziali);
         setModuli(moduliIniziali);
-        setPacchetti(pacchettiIniziali);
         setStack(stackIniziale);
 
         setOffline(false);
@@ -102,7 +85,6 @@ export function useCalcolatore() {
             parametri: parametriIniziali,
             costi: costiIniziali,
             moduli: moduliIniziali,
-            pacchetti: pacchettiIniziali,
             stack: stackIniziale,
           });
         }
@@ -121,7 +103,6 @@ export function useCalcolatore() {
         await Promise.all([
           ...dati.costi.map((r) => salvaRiga("costi", r)),
           ...dati.moduli.map((r) => salvaRiga("moduli", r)),
-          ...dati.pacchetti.map((r) => salvaRiga("pacchetti", r)),
           ...dati.stack.map((r) => salvaRiga("stack", r)),
         ]);
       } catch {
@@ -149,12 +130,12 @@ export function useCalcolatore() {
     }
     if (debounceCacheRef.current) clearTimeout(debounceCacheRef.current);
     debounceCacheRef.current = setTimeout(() => {
-      salvaCache({ parametri, costi, moduli, pacchetti, stack });
+      salvaCache({ parametri, costi, moduli, stack });
     }, 300);
     return () => {
       if (debounceCacheRef.current) clearTimeout(debounceCacheRef.current);
     };
-  }, [caricato, parametri, costi, moduli, pacchetti, stack]);
+  }, [caricato, parametri, costi, moduli, stack]);
 
   // Upsert dei parametri con debounce 800ms per non saturare Supabase durante il drag degli slider.
   useEffect(() => {
@@ -189,7 +170,6 @@ export function useCalcolatore() {
   const setter: Record<Tabella, Dispatch<SetStateAction<any[]>>> = {
     costi: setCosti,
     moduli: setModuli,
-    pacchetti: setPacchetti,
     stack: setStack,
   };
 
@@ -228,18 +208,10 @@ export function useCalcolatore() {
   const costiAzAnnui = useMemo(() => costiAnnuiTotali(costi), [costi]);
   const techStackMensile = useMemo(() => stackMensileTotale(stack), [stack]);
   const techStackAnnuo = useMemo(() => stackAnnuoTotale(stack), [stack]);
-  const { prezzoMedio, costoVarMedio, oreMedie } = useMemo(() => mediePacchetti(pacchetti), [pacchetti]);
 
   const anni = useMemo(
-    () =>
-      calcAnni({
-        parametri,
-        costiAzAnnui,
-        techStackAnnuo,
-        prezzoMedioVoce: prezzoMedio,
-        costoVarMedioVoce: costoVarMedio,
-      }),
-    [parametri, costiAzAnnui, techStackAnnuo, prezzoMedio, costoVarMedio]
+    () => calcAnni({ parametri, costiAzAnnui, techStackAnnuo }),
+    [parametri, costiAzAnnui, techStackAnnuo]
   );
 
   const kpi = useMemo(() => calcKpiParametri(anni, parametri), [anni, parametri]);
@@ -253,16 +225,12 @@ export function useCalcolatore() {
     aggiornaParametro,
     costi,
     moduli,
-    pacchetti,
     stack,
     salva,
     elimina,
     costiAzAnnui,
     techStackMensile,
     techStackAnnuo,
-    prezzoMedioVoce: prezzoMedio,
-    costoVarMedioVoce: costoVarMedio,
-    oreMedieVoce: oreMedie,
     anni,
     kpi,
   };

@@ -16,11 +16,11 @@ function generaInsight(calc: Calcolatore): string {
   if (kpi.semaforo === "verde") {
     return `Con questi parametri copri le spese già nell'Anno 1, con un margine di ${euro(-kpi.gapMensile)} al mese. Puoi permetterti di crescere più lentamente o alzare la riserva.`;
   }
-  const setupInPiu = Math.max(1, Math.ceil((kpi.gapMensile * 12) / (parametri.setup || 1)));
+  const l1InPiu = Math.max(1, Math.ceil((kpi.gapMensile * 12) / (parametri.prezzo_l1 || 1)));
   if (kpi.semaforo === "arancio") {
-    return `Ti mancano circa ${euro(kpi.gapMensile)} al mese per coprire le spese nell'Anno 1. Bastano ${setupInPiu} setup in più all'anno, o un piccolo aumento della tariffa/rinnovo, per chiudere il gap.`;
+    return `Ti mancano circa ${euro(kpi.gapMensile)} al mese per coprire le spese nell'Anno 1. Bastano ${l1InPiu} progetti Livello 1 in più all'anno (o qualche Livello 2 in più) per chiudere il gap.`;
   }
-  return `Il gap mensile è di ${euro(kpi.gapMensile)}: il piano attuale non sostiene la transizione nell'Anno 1. Valuta più setup all'anno (${setupInPiu}+), un prezzo di setup più alto, o allunga i tempi mantenendo il lavoro dipendente più a lungo.`;
+  return `Il gap mensile è di ${euro(kpi.gapMensile)}: il piano attuale non sostiene la transizione nell'Anno 1. Valuta più progetti all'anno (${l1InPiu}+ Livello 1, o punta su più Livello 2), oppure allunga i tempi mantenendo il lavoro dipendente più a lungo.`;
 }
 
 export function TabParametri({ calc }: { calc: Calcolatore }) {
@@ -32,7 +32,7 @@ export function TabParametri({ calc }: { calc: Calcolatore }) {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <KpiCard etichetta="Fatturato minimo" valore={euroCompatto(kpi.fatturatoMinimo)} sottotitolo="per anno, per vivere" />
-        <KpiCard etichetta="Setup necessari" valore={numero(kpi.setupNecessari)} sottotitolo="all'anno" />
+        <KpiCard etichetta="Progetti L2 necessari" valore={numero(kpi.progettiL2Necessari)} sottotitolo="equivalenti, all'anno" />
         <KpiCard etichetta="Runway" valore={`${numero(kpi.runwayMesi)} mesi`} sottotitolo="riserva liquida" />
         <KpiCard
           etichetta="Netto Anno 1"
@@ -47,56 +47,57 @@ export function TabParametri({ calc }: { calc: Calcolatore }) {
         />
       </div>
 
-      <Sezione titolo="Pricing" descrizione="Quanto fatturi per ogni cliente, nel tempo.">
+      <Sezione titolo="Pricing" descrizione="I tre servizi che offri, tutti a progetto (una tantum).">
         <Slider
-          etichetta="Setup medio"
-          valore={parametri.setup}
-          min={500}
+          etichetta="Livello 1 — Analisi + file MD"
+          valore={parametri.prezzo_l1}
+          min={200}
+          max={1500}
+          step={50}
+          suffisso=" €"
+          onChange={(v) => aggiornaParametro("prezzo_l1", v)}
+        />
+        <Slider
+          etichetta="Livello 2 — Implementazione completa"
+          valore={parametri.prezzo_l2}
+          min={800}
+          max={5000}
+          step={100}
+          suffisso=" €"
+          onChange={(v) => aggiornaParametro("prezzo_l2", v)}
+        />
+        <Slider
+          etichetta="Evoluzione — prezzo medio a preventivo"
+          valore={parametri.prezzo_evoluzione}
+          min={200}
           max={3000}
           step={50}
           suffisso=" €"
-          onChange={(v) => aggiornaParametro("setup", v)}
-        />
-        <Slider
-          etichetta="Rinnovo annuale"
-          valore={parametri.rinnovo}
-          min={50}
-          max={600}
-          step={10}
-          suffisso=" €"
-          onChange={(v) => aggiornaParametro("rinnovo", v)}
-        />
-        <Slider
-          etichetta="Tariffa oraria"
-          valore={parametri.tariffa}
-          min={30}
-          max={120}
-          step={5}
-          suffisso=" €/h"
-          onChange={(v) => aggiornaParametro("tariffa", v)}
-        />
-        <Slider
-          etichetta="Ore per sviluppo extra"
-          valore={parametri.oresvil}
-          min={1}
-          max={20}
-          step={1}
-          suffisso=" h"
-          onChange={(v) => aggiornaParametro("oresvil", v)}
+          aiuto="Il prezzo varia progetto per progetto; questo è il valore medio da usare nelle proiezioni."
+          onChange={(v) => aggiornaParametro("prezzo_evoluzione", v)}
         />
       </Sezione>
 
-      <Sezione titolo="Acquisizione clienti" descrizione="Quanti nuovi clienti prevedi di acquisire ogni anno.">
-        <Slider etichetta="Nuovi setup — Anno 1" valore={parametri.n1} min={0} max={30} onChange={(v) => aggiornaParametro("n1", v)} />
-        <Slider etichetta="Nuovi setup — Anno 2" valore={parametri.n2} min={0} max={30} onChange={(v) => aggiornaParametro("n2", v)} />
-        <Slider etichetta="Nuovi setup — Anno 3" valore={parametri.n3} min={0} max={30} onChange={(v) => aggiornaParametro("n3", v)} />
+      <Sezione titolo="Acquisizione — Livello 1" descrizione="Nuovi progetti Livello 1 per anno.">
+        <Slider etichetta="Anno 1" valore={parametri.n1_l1} min={0} max={30} onChange={(v) => aggiornaParametro("n1_l1", v)} />
+        <Slider etichetta="Anno 2" valore={parametri.n2_l1} min={0} max={30} onChange={(v) => aggiornaParametro("n2_l1", v)} />
+        <Slider etichetta="Anno 3 (e successivi)" valore={parametri.n3_l1} min={0} max={30} onChange={(v) => aggiornaParametro("n3_l1", v)} />
+      </Sezione>
+
+      <Sezione titolo="Acquisizione — Livello 2" descrizione="Nuovi progetti Livello 2 per anno.">
+        <Slider etichetta="Anno 1" valore={parametri.n1_l2} min={0} max={20} onChange={(v) => aggiornaParametro("n1_l2", v)} />
+        <Slider etichetta="Anno 2" valore={parametri.n2_l2} min={0} max={20} onChange={(v) => aggiornaParametro("n2_l2", v)} />
+        <Slider etichetta="Anno 3 (e successivi)" valore={parametri.n3_l2} min={0} max={20} onChange={(v) => aggiornaParametro("n3_l2", v)} />
+      </Sezione>
+
+      <Sezione titolo="Evoluzione progetto" descrizione="Quanti clienti già serviti in passato tornano ogni anno per un'Evoluzione.">
         <Slider
-          etichetta="Sviluppi extra per cliente/anno"
-          valore={parametri.svilpercl}
+          etichetta="% parco clienti che richiede un'Evoluzione/anno"
+          valore={parametri.adoz_evoluzione}
           min={0}
-          max={3}
-          step={0.1}
-          onChange={(v) => aggiornaParametro("svilpercl", v)}
+          max={100}
+          suffisso=" %"
+          onChange={(v) => aggiornaParametro("adoz_evoluzione", v)}
         />
       </Sezione>
 
@@ -127,15 +128,6 @@ export function TabParametri({ calc }: { calc: Calcolatore }) {
           suffisso=" €/mese"
           aiuto="Se lavori ancora come dipendente durante la transizione, riduce il gap da coprire con l'attività."
           onChange={(v) => aggiornaParametro("stipendio", v)}
-        />
-        <Slider
-          etichetta="Churn clienti"
-          valore={parametri.churn}
-          min={0}
-          max={30}
-          suffisso=" %"
-          aiuto="% di clienti che perdi ogni anno (mancato rinnovo)."
-          onChange={(v) => aggiornaParametro("churn", v)}
         />
       </Sezione>
 

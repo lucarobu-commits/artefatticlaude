@@ -1,12 +1,4 @@
-import type {
-  AnnoProiezione,
-  CalcoloFiscale,
-  KpiParametri,
-  Pacchetto,
-  Parametri,
-  Semaforo,
-  StrumentoStack,
-} from "./types";
+import type { AnnoProiezione, CalcoloFiscale, KpiParametri, Parametri, Semaforo, StrumentoStack } from "./types";
 
 /** Regime forfettario: 5% agevolato per i primi 5 anni dall'apertura P.IVA, poi 15%. */
 export function aliquotaImpostaAnno(annoSolare: number, annoInizio: number): number {
@@ -54,20 +46,6 @@ export function stackAnnuoTotale(stack: StrumentoStack[]): number {
   return stackMensileTotale(stack) * 12;
 }
 
-/** Prezzo, costo variabile e ore medie dei pacchetti à la carte, usati per stimare l'MRR per cliente. */
-export function mediePacchetti(pacchetti: Pacchetto[]): { prezzoMedio: number; costoVarMedio: number; oreMedie: number } {
-  if (pacchetti.length === 0) return { prezzoMedio: 0, costoVarMedio: 0, oreMedie: 0 };
-  const prezzoMedio = pacchetti.reduce((s, p) => s + p.prezzo, 0) / pacchetti.length;
-  const costoVarMedio = pacchetti.reduce((s, p) => s + p.costo_var, 0) / pacchetti.length;
-  const oreMedie = pacchetti.reduce((s, p) => s + p.ore_mese, 0) / pacchetti.length;
-  return { prezzoMedio, costoVarMedio, oreMedie };
-}
-
-/** Ricavo ricorrente mensile medio per cliente attivo, dato il tasso di adozione e le voci medie. */
-export function mrrPerCliente(params: Pick<Parametri, "adoz" | "vocipercl">, prezzoMedioVoce: number): number {
-  return (params.adoz / 100) * params.vocipercl * prezzoMedioVoce;
-}
-
 interface BreakEvenInput {
   vivere: number;
   costiAzAnnui: number;
@@ -95,19 +73,20 @@ export interface DatiProiezione {
   parametri: Parametri;
   costiAzAnnui: number;
   techStackAnnuo: number;
-  prezzoMedioVoce: number;
-  costoVarMedioVoce: number;
 }
 
 /**
- * Proiezione a 4 anni del portafoglio clienti e dei ricavi.
- * Nota: il brief espone solo 3 slider di acquisizione (Anno 1/2/3); l'Anno 4 assume
+ * Proiezione a 4 anni dei progetti erogati e dei ricavi.
+ * Servizio a progetto (una tantum): Livello 1, Livello 2, ed Evoluzione — quest'ultima colpisce
+ * ogni anno una % del parco clienti già serviti negli anni precedenti (non i nuovi dell'anno,
+ * che devono ancora completare il progetto iniziale prima di poter richiedere un'Evoluzione).
+ * Nota: il brief espone solo 3 slider di acquisizione per livello (Anno 1/2/3); l'Anno 4 assume
  * lo stesso ritmo di acquisizione dell'Anno 3 (regime "a velocità di crociera").
  */
 export function calcAnni(dati: DatiProiezione): AnnoProiezione[] {
-  const { parametri: p, costiAzAnnui, techStackAnnuo, prezzoMedioVoce, costoVarMedioVoce } = dati;
-  const nuoviPerAnno = [p.n1, p.n2, p.n3, p.n3];
-  const mrr = mrrPerCliente(p, prezzoMedioVoce);
+  const { parametri: p, costiAzAnnui, techStackAnnuo } = dati;
+  const nuoviL1PerAnno = [p.n1_l1, p.n2_l1, p.n3_l1, p.n3_l1];
+  const nuoviL2PerAnno = [p.n1_l2, p.n2_l2, p.n3_l2, p.n3_l2];
 
   let portafoglio = 0;
   const anni: AnnoProiezione[] = [];
@@ -115,22 +94,22 @@ export function calcAnni(dati: DatiProiezione): AnnoProiezione[] {
   for (let i = 0; i < 4; i++) {
     const anno = i + 1;
     const annoSolare = p.anno_inizio + i;
-    const nuoviClienti = nuoviPerAnno[i];
-    portafoglio = Math.round(portafoglio * (1 - p.churn / 100)) + nuoviClienti;
+    const nuoviL1 = nuoviL1PerAnno[i];
+    const nuoviL2 = nuoviL2PerAnno[i];
+    const portafoglioPrecedente = portafoglio;
+    portafoglio = portafoglioPrecedente + nuoviL1 + nuoviL2;
 
-    const ricaviSetup = nuoviClienti * p.setup;
-    const ricaviRinnovi = Math.max(0, portafoglio - nuoviClienti) * p.rinnovo;
-    const ricaviSviluppi = portafoglio * p.svilpercl * (p.tariffa * p.oresvil);
-    const ricaviPacchetti = portafoglio * mrr * 12;
-    const fatturato = ricaviSetup + ricaviRinnovi + ricaviSviluppi + ricaviPacchetti;
+    const ricaviL1 = nuoviL1 * p.prezzo_l1;
+    const ricaviL2 = nuoviL2 * p.prezzo_l2;
+    const ricaviEvoluzione = portafoglioPrecedente * (p.adoz_evoluzione / 100) * p.prezzo_evoluzione;
+    const fatturato = ricaviL1 + ricaviL2 + ricaviEvoluzione;
 
     const fisco = calcFisco(fatturato, annoSolare, p);
-    const costiPacchettiAnnui = portafoglio * (p.adoz / 100) * p.vocipercl * costoVarMedioVoce * 12;
-    const netto = fisco.netto - (costiAzAnnui + techStackAnnuo + costiPacchettiAnnui);
+    const netto = fisco.netto - (costiAzAnnui + techStackAnnuo);
 
     const breakEven = breakEvenReale({
       vivere: p.vivere,
-      costiAzAnnui: costiAzAnnui + techStackAnnuo + costiPacchettiAnnui,
+      costiAzAnnui: costiAzAnnui + techStackAnnuo,
       annoSolare,
       ateco: p.ateco,
       aliq_inps: p.aliq_inps,
@@ -141,17 +120,16 @@ export function calcAnni(dati: DatiProiezione): AnnoProiezione[] {
       anno,
       annoSolare,
       aliqImp: aliquotaImpostaAnno(annoSolare, p.anno_inizio),
-      nuoviClienti,
+      nuoviL1,
+      nuoviL2,
       portafoglio,
-      ricaviSetup,
-      ricaviRinnovi,
-      ricaviSviluppi,
-      ricaviPacchetti,
+      ricaviL1,
+      ricaviL2,
+      ricaviEvoluzione,
       fatturato,
       fisco,
       costiAzAnnui,
       techStackAnnuo,
-      costiPacchettiAnnui,
       netto,
       breakEven,
       progressoBreakEven: breakEven > 0 ? fatturato / breakEven : 0,
@@ -166,14 +144,14 @@ export function calcAnni(dati: DatiProiezione): AnnoProiezione[] {
 export function calcKpiParametri(anni: AnnoProiezione[], parametri: Parametri): KpiParametri {
   const anno1 = anni[0];
   const fatturatoMinimo = anno1.breakEven;
-  const setupNecessari = parametri.setup > 0 ? Math.ceil(fatturatoMinimo / parametri.setup) : 0;
+  const progettiL2Necessari = parametri.prezzo_l2 > 0 ? Math.ceil(fatturatoMinimo / parametri.prezzo_l2) : 0;
   const nettoAnno1 = anno1.netto;
 
   const nettoMensileTarget = parametri.vivere - parametri.stipendio;
   const nettoMensileAnno1 = nettoAnno1 / 12;
   const gapMensile = nettoMensileTarget - nettoMensileAnno1;
 
-  const runwayMesi = gapMensile > 0 && parametri.riserva > 0 ? parametri.riserva : parametri.riserva;
+  const runwayMesi = parametri.riserva;
 
   let semaforo: Semaforo = "verde";
   if (gapMensile > 0) {
@@ -181,5 +159,5 @@ export function calcKpiParametri(anni: AnnoProiezione[], parametri: Parametri): 
     semaforo = gapMensile <= sogliaArancio ? "arancio" : "rosso";
   }
 
-  return { semaforo, fatturatoMinimo, setupNecessari, runwayMesi, nettoAnno1, gapMensile };
+  return { semaforo, fatturatoMinimo, progettiL2Necessari, runwayMesi, nettoAnno1, gapMensile };
 }

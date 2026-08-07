@@ -18,7 +18,7 @@ export function TabCosti({ calc, onVaiStack }: { calc: Calcolatore; onVaiStack: 
   const fiscoAnno1 = anni[0]?.fisco;
   const fiscalitaMensile = fiscoAnno1 ? (fiscoAnno1.imposta + fiscoAnno1.contributi) / 12 : 0;
   const totaleUsciteMensili = costiOperativiMensili + fiscalitaMensile;
-  const setupPerCoprire = parametri.setup > 0 ? Math.ceil((totaleUsciteMensili * 12) / parametri.setup) : 0;
+  const progettiL1PerCoprire = parametri.prezzo_l1 > 0 ? Math.ceil((totaleUsciteMensili * 12) / parametri.prezzo_l1) : 0;
 
   return (
     <div className="flex flex-col gap-4">
@@ -33,7 +33,7 @@ export function TabCosti({ calc, onVaiStack }: { calc: Calcolatore; onVaiStack: 
         <KpiCard etichetta="Costi operativi/mese" valore={euro(costiOperativiMensili)} sottotitolo={`di cui tech stack ${euro(techStackMensile)}`} />
         <KpiCard etichetta="Fiscalità/mese" valore={euro(fiscalitaMensile)} sottotitolo="dettaglio qui sotto ↓" />
         <KpiCard etichetta="Totale uscite/mese" valore={euro(totaleUsciteMensili)} sottotitolo="operativi + fiscalità" tono="rosso" />
-        <KpiCard etichetta="Setup necessari" valore={numero(setupPerCoprire)} sottotitolo="/anno, per pareggiare" />
+        <KpiCard etichetta="Progetti L1 necessari" valore={numero(progettiL1PerCoprire)} sottotitolo="/anno, per pareggiare" />
       </div>
 
       <PannelloEdit<Costo>

@@ -1,20 +1,20 @@
-import type { Costo, Modulo, Pacchetto, Parametri, StrumentoStack } from "./types";
+import type { Costo, Modulo, Parametri, StrumentoStack } from "./types";
 
 export const DEFAULT_PARAMETRI: Omit<Parametri, "device_id"> = {
-  setup: 1500,
-  rinnovo: 200,
+  prezzo_l1: 600,
+  prezzo_l2: 2000,
+  prezzo_evoluzione: 800,
   tariffa: 60,
-  oresvil: 4,
-  n1: 4,
-  n2: 8,
-  n3: 14,
-  svilpercl: 0.5,
+  n1_l1: 3,
+  n2_l1: 5,
+  n3_l1: 8,
+  n1_l2: 1,
+  n2_l2: 3,
+  n3_l2: 5,
+  adoz_evoluzione: 20,
   vivere: 1900,
   riserva: 5,
   stipendio: 0,
-  churn: 5,
-  adoz: 60,
-  vocipercl: 1.5,
   ateco: 67,
   aliq_imp: 5,
   aliq_inps: 26.1,
@@ -28,17 +28,12 @@ export const DEFAULT_COSTI: Omit<Costo, "device_id">[] = [
 ];
 
 export const DEFAULT_MODULI: Omit<Modulo, "device_id">[] = [
-  { id: "default-modulo-1", nome: "Base", ore: 8 },
-  { id: "default-modulo-2", nome: "Cassa", ore: 8 },
-  { id: "default-modulo-3", nome: "Magazzino", ore: 4 },
-  { id: "default-modulo-4", nome: "Setup + formazione", ore: 4 },
-];
-
-export const DEFAULT_PACCHETTI: Omit<Pacchetto, "device_id">[] = [
-  { id: "default-pacchetto-1", nome: "Hosting + backup", prezzo: 15, ore_mese: 0, costo_var: 5 },
-  { id: "default-pacchetto-2", nome: "Aggiornamenti", prezzo: 20, ore_mese: 0.5, costo_var: 0 },
-  { id: "default-pacchetto-3", nome: "Reportistica", prezzo: 25, ore_mese: 1, costo_var: 0 },
-  { id: "default-pacchetto-4", nome: "Supporto prioritario", prezzo: 40, ore_mese: 2, costo_var: 0 },
+  { id: "default-modulo-1", nome: "Analisi situazione attuale", ore: 4, livello: "L1" },
+  { id: "default-modulo-2", nome: "Caricamento file MD", ore: 4, livello: "L1" },
+  { id: "default-modulo-3", nome: "Analisi approfondita", ore: 6, livello: "L2" },
+  { id: "default-modulo-4", nome: "Implementazione Business OS", ore: 10, livello: "L2" },
+  { id: "default-modulo-5", nome: "Formazione", ore: 3, livello: "L2" },
+  { id: "default-modulo-6", nome: "Bonus agenti marketing e sales", ore: 2, livello: "L2" },
 ];
 
 export const DEFAULT_STACK: Omit<StrumentoStack, "device_id">[] = [
@@ -76,9 +71,9 @@ export const ATECO_OPZIONI = [
   { valore: 40, etichetta: "40% — Commercio all'ingrosso e al dettaglio" },
   { valore: 54, etichetta: "54% — Commercio ambulante" },
   { valore: 62, etichetta: "62% — Costruzioni e attività immobiliari" },
-  { valore: 67, etichetta: "67% — Industrie, artigianato, servizi (professionisti)" },
-  { valore: 78, etichetta: "78% — Intermediari di commercio" },
-  { valore: 86, etichetta: "86% — Attività professionali, scientifiche e tecniche" },
+  { valore: 67, etichetta: "67% — Altre attività economiche (servizi, consulenza)" },
+  { valore: 78, etichetta: "78% — Attività professionali, scientifiche e tecniche" },
+  { valore: 86, etichetta: "86% — Sanità e assistenza sociale" },
 ];
 
 export const ANNI_APERTURA_PIVA = [2021, 2022, 2023, 2024, 2025, 2026];

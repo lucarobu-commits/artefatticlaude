@@ -1,12 +1,11 @@
-import type { Costo, Modulo, Pacchetto, Parametri, StrumentoStack } from "./types";
+import type { Costo, Modulo, Parametri, StrumentoStack } from "./types";
 
-const CHIAVE_CACHE = "calcolatore_cache_v1";
+const CHIAVE_CACHE = "calcolatore_cache_v2";
 
 export interface CacheDati {
   parametri: Parametri;
   costi: Costo[];
   moduli: Modulo[];
-  pacchetti: Pacchetto[];
   stack: StrumentoStack[];
 }
 

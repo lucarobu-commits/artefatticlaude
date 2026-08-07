@@ -21,10 +21,12 @@ function CardAnno({ anno }: { anno: AnnoProiezione }) {
       </div>
 
       <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
-        <span className="text-ink-soft">Clienti attivi</span>
+        <span className="text-ink-soft">Progetti erogati (tot.)</span>
         <span className="text-right font-medium">{anno.portafoglio}</span>
-        <span className="text-ink-soft">Nuovi</span>
-        <span className="text-right font-medium">+{anno.nuoviClienti}</span>
+        <span className="text-ink-soft">Nuovi L1 / L2</span>
+        <span className="text-right font-medium">
+          +{anno.nuoviL1} / +{anno.nuoviL2}
+        </span>
         <span className="text-ink-soft">Fatturato</span>
         <span className="text-right font-medium">{euroCompatto(anno.fatturato)}</span>
       </div>
@@ -88,13 +90,12 @@ export function TabAnnoPerAnno({ calc }: { calc: Calcolatore }) {
             </tr>
           </thead>
           <tbody>
-            <RigaTabella etichetta="Ricavi setup" valori={anni.map((a) => a.ricaviSetup)} />
-            <RigaTabella etichetta="Ricavi rinnovi" valori={anni.map((a) => a.ricaviRinnovi)} />
-            <RigaTabella etichetta="Ricavi sviluppi extra" valori={anni.map((a) => a.ricaviSviluppi)} />
-            <RigaTabella etichetta="Ricavi pacchetti" valori={anni.map((a) => a.ricaviPacchetti)} />
+            <RigaTabella etichetta="Ricavi Livello 1" valori={anni.map((a) => a.ricaviL1)} />
+            <RigaTabella etichetta="Ricavi Livello 2" valori={anni.map((a) => a.ricaviL2)} />
+            <RigaTabella etichetta="Ricavi Evoluzione" valori={anni.map((a) => a.ricaviEvoluzione)} />
             <RigaTabella etichetta="Fatturato totale" valori={anni.map((a) => a.fatturato)} />
             <RigaTabella etichetta="Imposta + INPS" valori={anni.map((a) => a.fisco.imposta + a.fisco.contributi)} />
-            <RigaTabella etichetta="Costi aziendali + stack" valori={anni.map((a) => a.costiAzAnnui + a.techStackAnnuo + a.costiPacchettiAnnui)} />
+            <RigaTabella etichetta="Costi aziendali + stack" valori={anni.map((a) => a.costiAzAnnui + a.techStackAnnuo)} />
             <RigaTabella etichetta="Netto" valori={anni.map((a) => a.netto)} />
             <RigaTabella etichetta="Fatturato break-even" valori={anni.map((a) => a.breakEven)} />
           </tbody>

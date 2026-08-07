@@ -1,23 +1,24 @@
+export type Livello = "L1" | "L2";
+
 export interface Parametri {
   device_id: string;
-  // Pricing base
-  setup: number; // prezzo medio setup una tantum (€)
-  rinnovo: number; // canone rinnovo annuale (€)
-  tariffa: number; // tariffa oraria per sviluppi extra (€/h)
-  oresvil: number; // ore medie per sviluppo extra
-  // Acquisizione
-  n1: number; // nuovi clienti Anno 1
-  n2: number; // nuovi clienti Anno 2
-  n3: number; // nuovi clienti Anno 3 (e Anno 4, regime a regime)
-  svilpercl: number; // sviluppi extra per cliente all'anno
+  // Pricing — servizi a progetto, una tantum
+  prezzo_l1: number; // Livello 1: analisi + caricamento file MD (€)
+  prezzo_l2: number; // Livello 2: analisi approfondita + implementazione + formazione + bonus agenti (€)
+  prezzo_evoluzione: number; // prezzo medio "a preventivo" di un progetto di Evoluzione (€)
+  tariffa: number; // tariffa oraria interna, usata per stimare la marginalità (€/h)
+  // Acquisizione — nuovi progetti L1/L2 per anno
+  n1_l1: number; // nuovi L1 — Anno 1
+  n2_l1: number; // nuovi L1 — Anno 2
+  n3_l1: number; // nuovi L1 — Anno 3 (e Anno 4, a regime)
+  n1_l2: number; // nuovi L2 — Anno 1
+  n2_l2: number; // nuovi L2 — Anno 2
+  n3_l2: number; // nuovi L2 — Anno 3 (e Anno 4, a regime)
+  adoz_evoluzione: number; // % del parco clienti già serviti che ogni anno richiede un'Evoluzione
   // Personali
   vivere: number; // spese mensili per vivere (€)
   riserva: number; // mesi di riserva liquida
   stipendio: number; // reddito netto da lavoro dipendente (€/mese), riduce il gap
-  churn: number; // tasso di abbandono clienti annuo (%)
-  // Pacchetti ricorrenti
-  adoz: number; // % clienti che attivano almeno una voce ricorrente
-  vocipercl: number; // voci medie attivate per cliente
   // Fiscalità
   ateco: number; // coefficiente di redditività ATECO (%)
   aliq_imp: number; // aliquota simulatore manuale (5 o 15) - non usata nella proiezione automatica
@@ -41,15 +42,7 @@ export interface Modulo {
   device_id: string;
   nome: string;
   ore: number;
-}
-
-export interface Pacchetto {
-  id: string;
-  device_id: string;
-  nome: string;
-  prezzo: number; // €/mese fatturati al cliente
-  ore_mese: number; // ore tue di gestione al mese
-  costo_var: number; // costo variabile mensile (€)
+  livello: Livello; // a quale pacchetto (L1 o L2) appartiene questa voce
 }
 
 export interface PianoStack {
@@ -78,17 +71,16 @@ export interface AnnoProiezione {
   anno: number; // indice 1..4
   annoSolare: number;
   aliqImp: number; // 0.05 o 0.15, applicata quell'anno
-  nuoviClienti: number;
-  portafoglio: number;
-  ricaviSetup: number;
-  ricaviRinnovi: number;
-  ricaviSviluppi: number;
-  ricaviPacchetti: number;
+  nuoviL1: number;
+  nuoviL2: number;
+  portafoglio: number; // totale progetti L1+L2 erogati cumulativamente fino a quest'anno incluso
+  ricaviL1: number;
+  ricaviL2: number;
+  ricaviEvoluzione: number;
   fatturato: number;
   fisco: CalcoloFiscale;
   costiAzAnnui: number;
   techStackAnnuo: number;
-  costiPacchettiAnnui: number;
   netto: number;
   breakEven: number;
   progressoBreakEven: number; // 0..1+
@@ -100,7 +92,7 @@ export type Semaforo = "verde" | "arancio" | "rosso";
 export interface KpiParametri {
   semaforo: Semaforo;
   fatturatoMinimo: number;
-  setupNecessari: number;
+  progettiL2Necessari: number;
   runwayMesi: number;
   nettoAnno1: number;
   gapMensile: number;
