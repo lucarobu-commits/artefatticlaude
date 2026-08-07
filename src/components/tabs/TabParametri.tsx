@@ -24,10 +24,26 @@ function generaInsight(calc: Calcolatore): string {
 }
 
 export function TabParametri({ calc }: { calc: Calcolatore }) {
-  const { parametri, aggiornaParametro, kpi } = calc;
+  const { parametri, aggiornaParametro, ripristinaParametri, kpi } = calc;
+
+  function chiediRipristino() {
+    if (window.confirm("Ripristinare tutti i parametri ai valori di default? I costi, i moduli e lo stack non vengono toccati.")) {
+      ripristinaParametri();
+    }
+  }
 
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex justify-end -mb-2">
+        <button
+          type="button"
+          onClick={chiediRipristino}
+          className="text-xs font-medium text-ink-soft hover:text-accent underline underline-offset-2 min-h-[32px] px-1"
+        >
+          Ripristina valori di default
+        </button>
+      </div>
+
       <Semaforo stato={kpi.semaforo} dettaglio={generaDettaglioSemaforo(calc)} />
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">

@@ -167,6 +167,10 @@ export function useCalcolatore() {
     setParametri((p) => ({ ...p, [chiave]: valore }));
   }, []);
 
+  const ripristinaParametri = useCallback(() => {
+    setParametri({ ...DEFAULT_PARAMETRI, device_id: deviceId });
+  }, [deviceId]);
+
   const setter: Record<Tabella, Dispatch<SetStateAction<any[]>>> = {
     costi: setCosti,
     moduli: setModuli,
@@ -223,6 +227,7 @@ export function useCalcolatore() {
     statoSync,
     parametri,
     aggiornaParametro,
+    ripristinaParametri,
     costi,
     moduli,
     stack,

@@ -32,6 +32,11 @@
     -webkit-appearance: none;
     appearance: none;
     background: transparent;
+    /* Senza questo, un dito che tocca lo slider per scrollare la pagina su mobile
+       viene interpretato come un trascinamento orizzontale e sposta il valore al
+       minimo. touch-action: pan-y lascia lo scroll verticale al browser e riserva
+       solo il gesto orizzontale al controllo dello slider. */
+    touch-action: pan-y;
   }
   input[type="range"]::-webkit-slider-runnable-track {
     height: 6px;
