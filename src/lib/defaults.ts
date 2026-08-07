@@ -1,5 +1,8 @@
 import type { Costo, Modulo, Parametri, StrumentoStack } from "./types";
 
+/** Anno corrente calcolato a runtime, così i default restano sensati indipendentemente da quando si apre l'app. */
+const ANNO_CORRENTE = new Date().getFullYear();
+
 export const DEFAULT_PARAMETRI: Omit<Parametri, "device_id"> = {
   prezzo_l1: 600,
   prezzo_l2: 2000,
@@ -17,7 +20,7 @@ export const DEFAULT_PARAMETRI: Omit<Parametri, "device_id"> = {
   ateco: 67,
   aliq_imp: 5,
   aliq_inps: 26.1,
-  anno_inizio: 2025,
+  anno_inizio: ANNO_CORRENTE,
   simfatt: 3000,
 };
 
@@ -75,4 +78,5 @@ export const ATECO_OPZIONI = [
   { valore: 86, etichetta: "86% — Sanità e assistenza sociale" },
 ];
 
-export const ANNI_APERTURA_PIVA = [2021, 2022, 2023, 2024, 2025, 2026];
+/** Range dinamico: 4 anni passati, l'anno corrente e il prossimo — resta rilevante senza bisogno di aggiornamenti manuali. */
+export const ANNI_APERTURA_PIVA = Array.from({ length: 6 }, (_, i) => ANNO_CORRENTE - 4 + i);
