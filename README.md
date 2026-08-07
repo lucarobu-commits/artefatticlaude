@@ -20,7 +20,7 @@ npm run dev
 2. Apri l'SQL editor ed esegui `supabase/migration.sql` per creare le tabelle (`parametri`, `costi`, `moduli`, `pacchetti`, `stack`).
 3. Copia `Project URL` e `anon public key` nel file `.env` come `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`.
 
-Se le variabili d'ambiente non sono configurate, o Supabase non è raggiungibile, l'app funziona comunque in **modalità offline**: usa i valori di default e mantiene i dati solo in memoria per la sessione corrente (non persistiti).
+Se le variabili d'ambiente non sono configurate, o Supabase non è raggiungibile, l'app funziona comunque in **modalità offline**: tutti i dati vengono salvati in `localStorage` su questo dispositivo/browser, quindi le modifiche sopravvivono a refresh e chiusure del browser anche senza Supabase — semplicemente non sono raggiungibili da altri dispositivi. Se in un secondo momento colleghi Supabase, i dati già presenti in locale vengono caricati sul cloud automaticamente al primo avvio (non vengono sovrascritti dai default).
 
 ### Nota sulla sicurezza dei dati
 

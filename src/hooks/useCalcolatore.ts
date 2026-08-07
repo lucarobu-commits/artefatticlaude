@@ -14,6 +14,7 @@ import {
   DEFAULT_PARAMETRI,
   DEFAULT_STACK,
 } from "../lib/defaults";
+import { leggiCache, salvaCache, type CacheDati } from "../lib/localCache";
 import {
   calcAnni,
   calcKpiParametri,
@@ -47,12 +48,25 @@ export function useCalcolatore() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const primoCaricamento = useRef(true);
 
-  // Caricamento iniziale dei dati del device da Supabase, con fallback offline sui default.
+  // Caricamento iniziale: Supabase se configurato e raggiungibile, altrimenti la cache
+  // locale di questo dispositivo (localStorage), altrimenti i valori di default.
+  // La cache locale ha sempre la precedenza sui default "vuoti", così le modifiche fatte
+  // su questo dispositivo non vengono mai perse — né al refresh, né collegando Supabase in un secondo momento.
   useEffect(() => {
     let annullato = false;
+    const cache = leggiCache();
+
+    function applicaCache(c: CacheDati) {
+      setParametri({ ...c.parametri, device_id: deviceId });
+      setCosti(c.costi.map((r) => ({ ...r, device_id: deviceId })));
+      setModuli(c.moduli.map((r) => ({ ...r, device_id: deviceId })));
+      setPacchetti(c.pacchetti.map((r) => ({ ...r, device_id: deviceId })));
+      setStack(c.stack.map((r) => ({ ...r, device_id: deviceId })));
+    }
 
     async function carica() {
       if (!supabaseConfigurato) {
+        if (cache) applicaCache(cache);
         setOffline(true);
         setStatoSync("offline");
         setCaricato(true);
@@ -65,36 +79,50 @@ export function useCalcolatore() {
 
         const primoAccesso = dati.parametri === null;
 
-        setParametri(dati.parametri ?? { ...DEFAULT_PARAMETRI, device_id: deviceId });
-        setCosti(primoAccesso ? conDeviceId(DEFAULT_COSTI, deviceId) : dati.costi);
-        setModuli(primoAccesso ? conDeviceId(DEFAULT_MODULI, deviceId) : dati.moduli);
-        setPacchetti(primoAccesso ? conDeviceId(DEFAULT_PACCHETTI, deviceId) : dati.pacchetti);
-        setStack(primoAccesso ? conDeviceId(DEFAULT_STACK, deviceId) : dati.stack);
+        const parametriIniziali = dati.parametri ?? cache?.parametri ?? { ...DEFAULT_PARAMETRI, device_id: deviceId };
+        const costiIniziali = primoAccesso ? (cache?.costi ?? conDeviceId(DEFAULT_COSTI, deviceId)) : dati.costi;
+        const moduliIniziali = primoAccesso ? (cache?.moduli ?? conDeviceId(DEFAULT_MODULI, deviceId)) : dati.moduli;
+        const pacchettiIniziali = primoAccesso ? (cache?.pacchetti ?? conDeviceId(DEFAULT_PACCHETTI, deviceId)) : dati.pacchetti;
+        const stackIniziale = primoAccesso ? (cache?.stack ?? conDeviceId(DEFAULT_STACK, deviceId)) : dati.stack;
+
+        setParametri(parametriIniziali);
+        setCosti(costiIniziali);
+        setModuli(moduliIniziali);
+        setPacchetti(pacchettiIniziali);
+        setStack(stackIniziale);
 
         setOffline(false);
         setStatoSync("sincronizzato");
         setCaricato(true);
 
         if (primoAccesso) {
-          // Semina i valori di default sul primo accesso, best-effort (non blocca la UI).
-          void seminaDefault(deviceId);
+          // Primo collegamento di questo dispositivo a Supabase: semina il cloud con la cache
+          // locale se esiste (preserva le modifiche già fatte offline), altrimenti con i default.
+          void seminaIniziale({
+            parametri: parametriIniziali,
+            costi: costiIniziali,
+            moduli: moduliIniziali,
+            pacchetti: pacchettiIniziali,
+            stack: stackIniziale,
+          });
         }
       } catch {
         if (annullato) return;
+        if (cache) applicaCache(cache);
         setOffline(true);
         setStatoSync("offline");
         setCaricato(true);
       }
     }
 
-    async function seminaDefault(id: string) {
+    async function seminaIniziale(dati: CacheDati) {
       try {
-        await upsertParametri({ ...DEFAULT_PARAMETRI, device_id: id });
+        await upsertParametri(dati.parametri);
         await Promise.all([
-          ...conDeviceId<Costo>(DEFAULT_COSTI, id).map((r) => salvaRiga("costi", r)),
-          ...conDeviceId<Modulo>(DEFAULT_MODULI, id).map((r) => salvaRiga("moduli", r)),
-          ...conDeviceId<Pacchetto>(DEFAULT_PACCHETTI, id).map((r) => salvaRiga("pacchetti", r)),
-          ...conDeviceId<StrumentoStack>(DEFAULT_STACK, id).map((r) => salvaRiga("stack", r)),
+          ...dati.costi.map((r) => salvaRiga("costi", r)),
+          ...dati.moduli.map((r) => salvaRiga("moduli", r)),
+          ...dati.pacchetti.map((r) => salvaRiga("pacchetti", r)),
+          ...dati.stack.map((r) => salvaRiga("stack", r)),
         ]);
       } catch {
         // Nessun dato locale a rischio: si riproverà al prossimo salvataggio esplicito dell'utente.
@@ -105,7 +133,28 @@ export function useCalcolatore() {
     return () => {
       annullato = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deviceId]);
+
+  // Specchio locale di tutti i dati (indipendente da Supabase): garantisce che nessuna
+  // modifica su questo dispositivo vada persa tra un refresh e l'altro. Debounce breve per
+  // non scrivere su localStorage ad ogni tick durante il trascinamento di uno slider.
+  const primoSalvataggioCache = useRef(true);
+  const debounceCacheRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!caricato) return;
+    if (primoSalvataggioCache.current) {
+      primoSalvataggioCache.current = false;
+      return;
+    }
+    if (debounceCacheRef.current) clearTimeout(debounceCacheRef.current);
+    debounceCacheRef.current = setTimeout(() => {
+      salvaCache({ parametri, costi, moduli, pacchetti, stack });
+    }, 300);
+    return () => {
+      if (debounceCacheRef.current) clearTimeout(debounceCacheRef.current);
+    };
+  }, [caricato, parametri, costi, moduli, pacchetti, stack]);
 
   // Upsert dei parametri con debounce 800ms per non saturare Supabase durante il drag degli slider.
   useEffect(() => {
