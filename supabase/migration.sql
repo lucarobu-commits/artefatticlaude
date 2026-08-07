@@ -8,7 +8,6 @@ create table if not exists parametri (
   prezzo_l1 numeric not null default 600,
   prezzo_l2 numeric not null default 2000,
   prezzo_evoluzione numeric not null default 800,
-  tariffa numeric not null default 60,
   n1_l1 numeric not null default 3,
   n2_l1 numeric not null default 5,
   n3_l1 numeric not null default 8,
@@ -40,7 +39,6 @@ create table if not exists moduli (
   id uuid primary key default gen_random_uuid(),
   device_id uuid not null,
   nome text not null default '',
-  ore numeric not null default 0,
   livello text not null default 'L1' check (livello in ('L1', 'L2'))
 );
 create index if not exists moduli_device_id_idx on moduli (device_id);

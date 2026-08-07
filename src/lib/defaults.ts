@@ -4,7 +4,6 @@ export const DEFAULT_PARAMETRI: Omit<Parametri, "device_id"> = {
   prezzo_l1: 600,
   prezzo_l2: 2000,
   prezzo_evoluzione: 800,
-  tariffa: 60,
   n1_l1: 3,
   n2_l1: 5,
   n3_l1: 8,
@@ -28,12 +27,12 @@ export const DEFAULT_COSTI: Omit<Costo, "device_id">[] = [
 ];
 
 export const DEFAULT_MODULI: Omit<Modulo, "device_id">[] = [
-  { id: "default-modulo-1", nome: "Analisi situazione attuale", ore: 4, livello: "L1" },
-  { id: "default-modulo-2", nome: "Caricamento file MD", ore: 4, livello: "L1" },
-  { id: "default-modulo-3", nome: "Analisi approfondita", ore: 6, livello: "L2" },
-  { id: "default-modulo-4", nome: "Implementazione Business OS", ore: 10, livello: "L2" },
-  { id: "default-modulo-5", nome: "Formazione", ore: 3, livello: "L2" },
-  { id: "default-modulo-6", nome: "Bonus agenti marketing e sales", ore: 2, livello: "L2" },
+  { id: "default-modulo-1", nome: "Analisi situazione attuale", livello: "L1" },
+  { id: "default-modulo-2", nome: "Caricamento file MD", livello: "L1" },
+  { id: "default-modulo-3", nome: "Analisi approfondita", livello: "L2" },
+  { id: "default-modulo-4", nome: "Implementazione Business OS", livello: "L2" },
+  { id: "default-modulo-5", nome: "Formazione", livello: "L2" },
+  { id: "default-modulo-6", nome: "Bonus agenti marketing e sales", livello: "L2" },
 ];
 
 export const DEFAULT_STACK: Omit<StrumentoStack, "device_id">[] = [

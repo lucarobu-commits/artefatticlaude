@@ -6,7 +6,6 @@ export interface Parametri {
   prezzo_l1: number; // Livello 1: analisi + caricamento file MD (€)
   prezzo_l2: number; // Livello 2: analisi approfondita + implementazione + formazione + bonus agenti (€)
   prezzo_evoluzione: number; // prezzo medio "a preventivo" di un progetto di Evoluzione (€)
-  tariffa: number; // tariffa oraria interna, usata per stimare la marginalità (€/h)
   // Acquisizione — nuovi progetti L1/L2 per anno
   n1_l1: number; // nuovi L1 — Anno 1
   n2_l1: number; // nuovi L1 — Anno 2
@@ -41,7 +40,6 @@ export interface Modulo {
   id: string;
   device_id: string;
   nome: string;
-  ore: number;
   livello: Livello; // a quale pacchetto (L1 o L2) appartiene questa voce
 }
 
