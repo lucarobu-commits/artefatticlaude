@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-bg: #f9f9f7;
+  --color-surface: #ffffff;
+  --color-ink: #1f1f1d;
+  --color-ink-soft: #6b6b64;
+  --color-border: #e8e8e0;
+  --color-accent: #2563eb;
+  --color-accent-soft: #eff6ff;
+  --color-green: #16a34a;
+  --color-green-soft: #f0fdf4;
+  --color-orange: #d97706;
+  --color-orange-soft: #fffbeb;
+  --color-red: #dc2626;
+  --color-red-soft: #fef2f2;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 4px;
+    background: var(--color-border);
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    margin-top: -7px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    border: 3px solid white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+  }
+  input[type="range"]::-moz-range-track {
+    height: 6px;
+    border-radius: 4px;
+    background: var(--color-border);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    border: 3px solid white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  @keyframes slide-down {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+      max-height: 0;
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      max-height: 2000px;
+    }
+  }
+  .animate-slide-down {
+    animation: slide-down 180ms ease-out;
+  }
+}
