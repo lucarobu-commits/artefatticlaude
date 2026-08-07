@@ -14,7 +14,7 @@ export function Slider({ etichetta, valore, min, max, step = 1, suffisso = "", a
     <div>
       <div className="flex items-baseline justify-between gap-2">
         <label className="text-sm font-medium text-ink">{etichetta}</label>
-        <span className="text-sm font-semibold text-accent tabular-nums">
+        <span className="text-base font-bold text-accent tabular-nums whitespace-nowrap">
           {valore.toLocaleString("it-IT")}
           {suffisso}
         </span>
@@ -29,13 +29,13 @@ export function Slider({ etichetta, valore, min, max, step = 1, suffisso = "", a
         className="w-full mt-2 h-11"
         aria-label={etichetta}
       />
-      <div className="flex justify-between text-[11px] text-ink-soft -mt-1">
+      <div className="flex justify-between text-[10px] text-ink-soft/70 -mt-1">
         <span>
-          {min.toLocaleString("it-IT")}
+          min {min.toLocaleString("it-IT")}
           {suffisso}
         </span>
         <span>
-          {max.toLocaleString("it-IT")}
+          max {max.toLocaleString("it-IT")}
           {suffisso}
         </span>
       </div>
