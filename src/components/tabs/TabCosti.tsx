@@ -2,7 +2,7 @@ import type { Calcolatore } from "../../hooks/useCalcolatore";
 import type { Costo } from "../../lib/types";
 import { KpiCard } from "../ui/KpiCard";
 import { PannelloEdit } from "../ui/PannelloEdit";
-import { euro, numero } from "../../lib/format";
+import { euro, numero, percento } from "../../lib/format";
 
 const OPZIONI_FREQ = [
   { valore: "mese", etichetta: "Al mese" },
@@ -13,9 +13,11 @@ export function TabCosti({ calc, onVaiStack }: { calc: Calcolatore; onVaiStack: 
   const { parametri, costi, salva, elimina, costiAzAnnui, techStackMensile, anni } = calc;
 
   const costiAzMensili = costiAzAnnui / 12;
+  const costiOperativiMensili = costiAzMensili + techStackMensile;
+  const fatturatoAnno1 = anni[0]?.fatturato ?? 0;
   const fiscoAnno1 = anni[0]?.fisco;
   const fiscalitaMensile = fiscoAnno1 ? (fiscoAnno1.imposta + fiscoAnno1.contributi) / 12 : 0;
-  const totaleUsciteMensili = costiAzMensili + techStackMensile + fiscalitaMensile;
+  const totaleUsciteMensili = costiOperativiMensili + fiscalitaMensile;
   const setupPerCoprire = parametri.setup > 0 ? Math.ceil((totaleUsciteMensili * 12) / parametri.setup) : 0;
 
   return (
@@ -28,10 +30,10 @@ export function TabCosti({ calc, onVaiStack }: { calc: Calcolatore; onVaiStack: 
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <KpiCard etichetta="Costi az./mese" valore={euro(costiAzMensili)} sottotitolo={`incl. tech stack ${euro(techStackMensile)}`} />
-        <KpiCard etichetta="Fiscalità/mese" valore={euro(fiscalitaMensile)} sottotitolo="imposta + INPS, Anno 1" />
-        <KpiCard etichetta="Totale uscite/mese" valore={euro(totaleUsciteMensili)} tono="rosso" />
-        <KpiCard etichetta="Setup necessari" valore={numero(setupPerCoprire)} sottotitolo="all'anno, per coprire tutto" />
+        <KpiCard etichetta="Costi operativi/mese" valore={euro(costiOperativiMensili)} sottotitolo={`di cui tech stack ${euro(techStackMensile)}`} />
+        <KpiCard etichetta="Fiscalità/mese" valore={euro(fiscalitaMensile)} sottotitolo="dettaglio qui sotto ↓" />
+        <KpiCard etichetta="Totale uscite/mese" valore={euro(totaleUsciteMensili)} sottotitolo="operativi + fiscalità" tono="rosso" />
+        <KpiCard etichetta="Setup necessari" valore={numero(setupPerCoprire)} sottotitolo="/anno, per pareggiare" />
       </div>
 
       <PannelloEdit<Costo>
@@ -70,20 +72,31 @@ export function TabCosti({ calc, onVaiStack }: { calc: Calcolatore; onVaiStack: 
       </div>
 
       <div className="rounded-[9px] border border-border bg-surface p-4">
-        <h3 className="text-sm font-semibold mb-2">Fiscalità stimata (sola lettura)</h3>
-        <p className="text-xs text-ink-soft mb-3">Calcolata sul fatturato previsto nell'Anno 1 della proiezione.</p>
-        <div className="grid grid-cols-3 gap-2 text-center">
-          <div>
-            <div className="text-sm font-semibold tabular-nums">{euro(fiscoAnno1?.imposta ?? 0)}</div>
-            <div className="text-[11px] text-ink-soft">Imposta/anno</div>
+        <h3 className="text-sm font-semibold mb-1">Fiscalità stimata (sola lettura)</h3>
+        <p className="text-xs text-ink-soft mb-3">
+          Da dove viene: il fatturato previsto per l'Anno 1 (tab "Anno per anno") passa dal coefficiente ATECO e dalle
+          aliquote impostate nel tab "Fiscalità". Cambia i parametri lì per aggiornare questa stima.
+        </p>
+        <div className="rounded-lg border border-border overflow-hidden text-sm">
+          <div className="flex justify-between px-3 py-2 border-b border-border">
+            <span className="text-ink-soft">Fatturato previsto — Anno 1</span>
+            <span className="tabular-nums">{euro(fatturatoAnno1)}</span>
           </div>
-          <div>
-            <div className="text-sm font-semibold tabular-nums">{euro(fiscoAnno1?.contributi ?? 0)}</div>
-            <div className="text-[11px] text-ink-soft">INPS/anno</div>
+          <div className="flex justify-between px-3 py-2 border-b border-border">
+            <span className="text-ink-soft">× coefficiente ATECO ({parametri.ateco}%) = imponibile</span>
+            <span className="tabular-nums">{euro(fiscoAnno1?.imponibile ?? 0)}</span>
           </div>
-          <div>
-            <div className="text-sm font-semibold tabular-nums">{euro(fiscalitaMensile)}</div>
-            <div className="text-[11px] text-ink-soft">Media/mese</div>
+          <div className="flex justify-between px-3 py-2 border-b border-border">
+            <span className="text-ink-soft">− imposta ({percento((anni[0]?.aliqImp ?? 0) * 100)})</span>
+            <span className="tabular-nums text-red">−{euro(fiscoAnno1?.imposta ?? 0)}</span>
+          </div>
+          <div className="flex justify-between px-3 py-2 border-b border-border">
+            <span className="text-ink-soft">− contributi INPS ({parametri.aliq_inps}%)</span>
+            <span className="tabular-nums text-orange">−{euro(fiscoAnno1?.contributi ?? 0)}</span>
+          </div>
+          <div className="flex justify-between px-3 py-2 bg-accent-soft font-semibold">
+            <span>= totale annuo, diviso 12</span>
+            <span className="tabular-nums">{euro(fiscalitaMensile)}/mese</span>
           </div>
         </div>
       </div>
