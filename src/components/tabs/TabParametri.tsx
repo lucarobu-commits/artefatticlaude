@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Calcolatore } from "../../hooks/useCalcolatore";
 import { KpiCard } from "../ui/KpiCard";
 import { Semaforo } from "../ui/Semaforo";
@@ -25,23 +26,41 @@ function generaInsight(calc: Calcolatore): string {
 
 export function TabParametri({ calc }: { calc: Calcolatore }) {
   const { parametri, aggiornaParametro, ripristinaParametri, kpi } = calc;
-
-  function chiediRipristino() {
-    if (window.confirm("Ripristinare tutti i parametri ai valori di default? I costi, i moduli e lo stack non vengono toccati.")) {
-      ripristinaParametri();
-    }
-  }
+  const [confermaRipristino, setConfermaRipristino] = useState(false);
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-end -mb-2">
-        <button
-          type="button"
-          onClick={chiediRipristino}
-          className="text-xs font-medium text-ink-soft hover:text-accent underline underline-offset-2 min-h-[32px] px-1"
-        >
-          Ripristina valori di default
-        </button>
+        {!confermaRipristino ? (
+          <button
+            type="button"
+            onClick={() => setConfermaRipristino(true)}
+            className="text-xs font-medium text-ink-soft hover:text-accent underline underline-offset-2 min-h-[32px] px-1"
+          >
+            Ripristina valori di default
+          </button>
+        ) : (
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-ink-soft">Confermi? Costi, moduli e stack non vengono toccati.</span>
+            <button
+              type="button"
+              onClick={() => {
+                ripristinaParametri();
+                setConfermaRipristino(false);
+              }}
+              className="font-semibold text-red underline underline-offset-2 min-h-[32px] px-1"
+            >
+              Sì, ripristina
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfermaRipristino(false)}
+              className="text-ink-soft underline underline-offset-2 min-h-[32px] px-1"
+            >
+              Annulla
+            </button>
+          </div>
+        )}
       </div>
 
       <Semaforo stato={kpi.semaforo} dettaglio={generaDettaglioSemaforo(calc)} />
