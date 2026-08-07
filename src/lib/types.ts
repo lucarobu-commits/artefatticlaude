@@ -13,7 +13,8 @@ export interface Parametri {
   n1_l2: number; // nuovi L2 — Anno 1
   n2_l2: number; // nuovi L2 — Anno 2
   n3_l2: number; // nuovi L2 — Anno 3 (e Anno 4, a regime)
-  adoz_evoluzione: number; // % del parco clienti già serviti che ogni anno richiede un'Evoluzione
+  adoz_evoluzione: number; // % del parco clienti già serviti che ogni anno avvia un percorso di Evoluzione
+  conv_evoluzione: number; // % di chi avvia il percorso che poi genera fatturato pagato (il resto è lavoro non pagato)
   // Personali
   vivere: number; // spese mensili per vivere (€)
   riserva: number; // mesi di riserva liquida
@@ -75,6 +76,8 @@ export interface AnnoProiezione {
   ricaviL1: number;
   ricaviL2: number;
   ricaviEvoluzione: number;
+  percorsiEvoluzione: number; // quanti clienti avviano il percorso quest'anno (pagati + non pagati)
+  evoluzioniNonPagate: number; // di questi, quanti non convertono in fatturato — lavoro fatto ma non pagato
   fatturato: number;
   fisco: CalcoloFiscale;
   costiAzAnnui: number;

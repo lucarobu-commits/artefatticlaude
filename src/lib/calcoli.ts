@@ -80,6 +80,8 @@ export interface DatiProiezione {
  * Servizio a progetto (una tantum): Livello 1, Livello 2, ed Evoluzione — quest'ultima colpisce
  * ogni anno una % del parco clienti già serviti negli anni precedenti (non i nuovi dell'anno,
  * che devono ancora completare il progetto iniziale prima di poter richiedere un'Evoluzione).
+ * Di chi avvia il percorso Evoluzione, solo una % (conv_evoluzione) converte in fatturato pagato:
+ * il resto è lavoro svolto ma non fatturato, tracciato a parte in `evoluzioniNonPagate`.
  * Nota: il brief espone solo 3 slider di acquisizione per livello (Anno 1/2/3); l'Anno 4 assume
  * lo stesso ritmo di acquisizione dell'Anno 3 (regime "a velocità di crociera").
  */
@@ -101,7 +103,10 @@ export function calcAnni(dati: DatiProiezione): AnnoProiezione[] {
 
     const ricaviL1 = nuoviL1 * p.prezzo_l1;
     const ricaviL2 = nuoviL2 * p.prezzo_l2;
-    const ricaviEvoluzione = portafoglioPrecedente * (p.adoz_evoluzione / 100) * p.prezzo_evoluzione;
+    const percorsiEvoluzione = portafoglioPrecedente * (p.adoz_evoluzione / 100);
+    const evoluzioniPagate = percorsiEvoluzione * (p.conv_evoluzione / 100);
+    const evoluzioniNonPagate = percorsiEvoluzione - evoluzioniPagate;
+    const ricaviEvoluzione = evoluzioniPagate * p.prezzo_evoluzione;
     const fatturato = ricaviL1 + ricaviL2 + ricaviEvoluzione;
 
     const fisco = calcFisco(fatturato, annoSolare, p);
@@ -126,6 +131,8 @@ export function calcAnni(dati: DatiProiezione): AnnoProiezione[] {
       ricaviL1,
       ricaviL2,
       ricaviEvoluzione,
+      percorsiEvoluzione,
+      evoluzioniNonPagate,
       fatturato,
       fisco,
       costiAzAnnui,

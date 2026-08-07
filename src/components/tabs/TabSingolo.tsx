@@ -19,7 +19,7 @@ export function TabSingolo({ calc }: { calc: Calcolatore }) {
 
   const [orizzonteAnni, setOrizzonteAnni] = useState(3);
 
-  const evoluzionePerAnno = (parametri.adoz_evoluzione / 100) * parametri.prezzo_evoluzione;
+  const evoluzionePerAnno = (parametri.adoz_evoluzione / 100) * (parametri.conv_evoluzione / 100) * parametri.prezzo_evoluzione;
 
   const righeOrizzonte = useMemo(() => {
     const righe: { anno: number; l1: number; l2: number }[] = [];
@@ -98,7 +98,9 @@ export function TabSingolo({ calc }: { calc: Calcolatore }) {
           </tbody>
         </table>
         <p className="mt-3 text-[11px] text-ink-soft leading-snug">
-          Dal 2° anno, ogni cliente vale in media {euro(evoluzionePerAnno)}/anno in più grazie alle Evoluzioni ({percento(parametri.adoz_evoluzione)} di probabilità × {euro(parametri.prezzo_evoluzione)}).
+          Dal 2° anno, ogni cliente vale in media {euro(evoluzionePerAnno)}/anno in più grazie alle Evoluzioni pagate
+          ({percento(parametri.adoz_evoluzione)} avvia il percorso × {percento(parametri.conv_evoluzione)} converte in
+          fatturato × {euro(parametri.prezzo_evoluzione)}).
         </p>
       </div>
     </div>

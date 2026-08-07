@@ -125,14 +125,26 @@ export function TabParametri({ calc }: { calc: Calcolatore }) {
         <Slider etichetta="Anno 3 (e successivi)" valore={parametri.n3_l2} min={0} max={20} onChange={(v) => aggiornaParametro("n3_l2", v)} />
       </Sezione>
 
-      <Sezione titolo="Evoluzione progetto" descrizione="Quanti clienti già serviti in passato tornano ogni anno per un'Evoluzione.">
+      <Sezione
+        titolo="Evoluzione progetto"
+        descrizione="Non tutti quelli che avviano un percorso di Evoluzione lo trasformano in un progetto pagato: il resto è lavoro fatto ma non fatturato."
+      >
         <Slider
-          etichetta="% parco clienti che richiede un'Evoluzione/anno"
+          etichetta="% parco clienti che avvia un percorso Evoluzione/anno"
           valore={parametri.adoz_evoluzione}
           min={0}
           max={100}
           suffisso=" %"
           onChange={(v) => aggiornaParametro("adoz_evoluzione", v)}
+        />
+        <Slider
+          etichetta="% che poi genera fatturato (conversione)"
+          valore={parametri.conv_evoluzione}
+          min={0}
+          max={100}
+          suffisso=" %"
+          aiuto={`Effettivamente pagato: ${(parametri.adoz_evoluzione * parametri.conv_evoluzione / 100).toFixed(0)}% del parco clienti. Il resto (${(parametri.adoz_evoluzione * (100 - parametri.conv_evoluzione) / 100).toFixed(0)}%) è percorso avviato ma non fatturato.`}
+          onChange={(v) => aggiornaParametro("conv_evoluzione", v)}
         />
       </Sezione>
 

@@ -1,7 +1,7 @@
 import type { Calcolatore } from "../../hooks/useCalcolatore";
 import type { AnnoProiezione } from "../../lib/types";
 import { BarraProgresso } from "../ui/BarraProgresso";
-import { euro, euroCompatto, percento } from "../../lib/format";
+import { euro, euroCompatto, numero, percento } from "../../lib/format";
 
 function CardAnno({ anno }: { anno: AnnoProiezione }) {
   return (
@@ -93,6 +93,11 @@ export function TabAnnoPerAnno({ calc }: { calc: Calcolatore }) {
             <RigaTabella etichetta="Ricavi Livello 1" valori={anni.map((a) => a.ricaviL1)} />
             <RigaTabella etichetta="Ricavi Livello 2" valori={anni.map((a) => a.ricaviL2)} />
             <RigaTabella etichetta="Ricavi Evoluzione" valori={anni.map((a) => a.ricaviEvoluzione)} />
+            <RigaTabella
+              etichetta="Evoluzioni non pagate"
+              valori={anni.map((a) => a.evoluzioniNonPagate)}
+              formato={(n) => (n > 0 ? `${numero(n)} progetti` : "—")}
+            />
             <RigaTabella etichetta="Fatturato totale" valori={anni.map((a) => a.fatturato)} />
             <RigaTabella etichetta="Imposta + INPS" valori={anni.map((a) => a.fisco.imposta + a.fisco.contributi)} />
             <RigaTabella etichetta="Costi aziendali + stack" valori={anni.map((a) => a.costiAzAnnui + a.techStackAnnuo)} />
