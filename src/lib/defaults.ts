@@ -26,8 +26,8 @@ export const DEFAULT_PARAMETRI: Omit<Parametri, "device_id"> = {
 };
 
 export const DEFAULT_COSTI: Omit<Costo, "device_id">[] = [
-  { id: "default-costo-1", nome: "Commercialista", importo: 100, freq: "mese" },
-  { id: "default-costo-2", nome: "Strumenti vari", importo: 30, freq: "mese" },
+  { id: "default-costo-1", nome: "Commercialista", importo: 50, freq: "mese" },
+  { id: "default-costo-2", nome: "Strumenti vari", importo: 0, freq: "mese" },
 ];
 
 export const DEFAULT_MODULI: Omit<Modulo, "device_id">[] = [
