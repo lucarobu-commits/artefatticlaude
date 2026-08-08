@@ -25,8 +25,9 @@ function generaInsight(calc: Calcolatore): string {
 }
 
 export function TabParametri({ calc }: { calc: Calcolatore }) {
-  const { parametri, aggiornaParametro, ripristinaParametri, kpi } = calc;
+  const { parametri, aggiornaParametro, ripristinaTutto, kpi } = calc;
   const [confermaRipristino, setConfermaRipristino] = useState(false);
+  const [ripristinando, setRipristinando] = useState(false);
 
   return (
     <div className="flex flex-col gap-4">
@@ -37,20 +38,23 @@ export function TabParametri({ calc }: { calc: Calcolatore }) {
             onClick={() => setConfermaRipristino(true)}
             className="text-xs font-medium text-ink-soft hover:text-accent underline underline-offset-2 min-h-[32px] px-1"
           >
-            Ripristina valori di default
+            Ripristina tutto ai valori di default
           </button>
         ) : (
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-ink-soft">Confermi? Costi, moduli e stack non vengono toccati.</span>
+            <span className="text-ink-soft">Confermi? Parametri, costi, moduli e stack tornano ai default.</span>
             <button
               type="button"
-              onClick={() => {
-                ripristinaParametri();
+              disabled={ripristinando}
+              onClick={async () => {
+                setRipristinando(true);
+                await ripristinaTutto();
+                setRipristinando(false);
                 setConfermaRipristino(false);
               }}
-              className="font-semibold text-red underline underline-offset-2 min-h-[32px] px-1"
+              className="font-semibold text-red underline underline-offset-2 min-h-[32px] px-1 disabled:opacity-60"
             >
-              Sì, ripristina
+              {ripristinando ? "Ripristino…" : "Sì, ripristina"}
             </button>
             <button
               type="button"

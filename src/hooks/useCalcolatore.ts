@@ -167,10 +167,6 @@ export function useCalcolatore() {
     setParametri((p) => ({ ...p, [chiave]: valore }));
   }, []);
 
-  const ripristinaParametri = useCallback(() => {
-    setParametri({ ...DEFAULT_PARAMETRI, device_id: deviceId });
-  }, [deviceId]);
-
   const setter: Record<Tabella, Dispatch<SetStateAction<any[]>>> = {
     costi: setCosti,
     moduli: setModuli,
@@ -209,6 +205,22 @@ export function useCalcolatore() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Ripristina TUTTO ai valori di default: parametri, costi, moduli e stack. Passa da salva/elimina
+  // (non da setState diretto) così, se Supabase è configurato, il ripristino si sincronizza anche lì.
+  const ripristinaTutto = useCallback(async () => {
+    setParametri({ ...DEFAULT_PARAMETRI, device_id: deviceId });
+    await Promise.all([
+      ...costi.map((r) => elimina("costi", r.id)),
+      ...moduli.map((r) => elimina("moduli", r.id)),
+      ...stack.map((r) => elimina("stack", r.id)),
+    ]);
+    await Promise.all([
+      ...conDeviceId<Costo>(DEFAULT_COSTI, deviceId).map((r) => salva("costi", r)),
+      ...conDeviceId<Modulo>(DEFAULT_MODULI, deviceId).map((r) => salva("moduli", r)),
+      ...conDeviceId<StrumentoStack>(DEFAULT_STACK, deviceId).map((r) => salva("stack", r)),
+    ]);
+  }, [deviceId, costi, moduli, stack, salva, elimina]);
+
   const costiAzAnnui = useMemo(() => costiAnnuiTotali(costi), [costi]);
   const techStackMensile = useMemo(() => stackMensileTotale(stack), [stack]);
   const techStackAnnuo = useMemo(() => stackAnnuoTotale(stack), [stack]);
@@ -227,7 +239,7 @@ export function useCalcolatore() {
     statoSync,
     parametri,
     aggiornaParametro,
-    ripristinaParametri,
+    ripristinaTutto,
     costi,
     moduli,
     stack,
