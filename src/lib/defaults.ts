@@ -64,9 +64,21 @@ export const DEFAULT_STACK: Omit<StrumentoStack, "device_id">[] = [
   },
   {
     id: "default-stack-4",
-    nome: "Dominio + email",
-    piano_attivo: "base",
-    piani: [{ id: "base", nome: "Base", prezzo: 5 }],
+    nome: "Claude Pro",
+    piano_attivo: "pro",
+    piani: [
+      { id: "free", nome: "Free", prezzo: 0 },
+      { id: "pro", nome: "Pro", prezzo: 18 },
+    ],
+  },
+  {
+    id: "default-stack-5",
+    nome: "Brevo",
+    piano_attivo: "starter",
+    piani: [
+      { id: "free", nome: "Free", prezzo: 0 },
+      { id: "starter", nome: "Starter", prezzo: 7 },
+    ],
   },
 ];
 
